@@ -2,6 +2,8 @@ import { Hono } from 'hono';
 import { createClient } from '@supabase/supabase-js';
 import { createBookingSchema } from '../schemas/booking';
 import { Bindings } from '../types';
+import { calculatePriceSchema } from '../schemas/pricing';
+import { calculateParkingPrice } from '../utils/pricing';
 
 const bookings = new Hono<{ Bindings: Bindings }>();
 
@@ -80,6 +82,38 @@ bookings.post('/', async (c) => {
         message: 'Reserva creada correctamente',
         data: insertedBooking
     }, 201);
+});
+
+// POST /bookings/pricing
+// Calculamos el precio de la reserva
+bookings.post('/pricing', async (c) => {
+    const body = await c.req.json();
+
+    // Validamos los campos de fecha, hora y tipo de plaza
+    const result = calculatePriceSchema.safeParse(body);
+
+    if (!result.success) {
+        return c.json({ success: false, errors: result.error.issues }, 400);
+    }
+
+    const { fechaEntrada, fechaSalida, tipoPlaza } = result.data;
+
+    try {
+        // Usamos la utilidad
+        const calculation = calculateParkingPrice(fechaEntrada, fechaSalida, tipoPlaza);
+
+        // Devolvemos el cálculo al frontend
+        return c.json({
+            success: true,
+            data: calculation 
+            // Esto devolverá: { totalPrice: 30 }
+        });
+    } catch (e) {
+        return c.json({
+            success: false,
+            message: e instanceof Error ? e.message : "Error al calcular"
+        }, 400);
+    }
 });
 
 export default bookings;
