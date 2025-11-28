@@ -1,6 +1,13 @@
 import { TARIFAS } from "./tariffs";
 
-export function calculateParkingPrice(fechaEntrada: string, fechaSalida: string, tipoPlaza: string): { totalPrice: number } {
+export function calculateParkingPrice(fechaEntrada: string | undefined | null, fechaSalida: string | undefined | null, tipoPlaza: string | undefined | null): { totalPrice: number } {
+    // Si falta algún dato, devolvemos 0 inmediatamente
+    if (!fechaEntrada || !fechaSalida || !tipoPlaza) {
+        return {
+            totalPrice: 0,
+        };
+    }
+
     // Crear fechas (al no tener hora, JS asume UTC 00:00:00)
     const start = new Date(fechaEntrada);
     const end = new Date(fechaSalida);

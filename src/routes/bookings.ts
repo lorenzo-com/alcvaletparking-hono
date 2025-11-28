@@ -36,6 +36,9 @@ bookings.post('/', async (c) => {
     // Si todo va bien, usamos los datos LIMPIOS y TIPADOS
     const data = result.data;
 
+    // Re-calcumos el precio por seguridad (Para que desde el frontend no nos envien cualquier precio)
+    const { totalPrice } = calculateParkingPrice(data.fechaEntrada, data.fechaSalida, data.tipoPlaza);
+
     // Iniciar Supabase (Usando las variables de entorno de Hono)
     const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY);
 
@@ -51,7 +54,7 @@ bookings.post('/', async (c) => {
         num_vuelo: data.numVuelo,
         comentarios: data.comentarios,
         // TODO: cliente_id: data.clienteId, // Importante: Este ID debe existir en auth.users o tu tabla de users
-        precio: data.precio,
+        precio: totalPrice,
         nombre_completo: data.nombreCompleto,
         telefono: data.telefono,
         email: data.email,

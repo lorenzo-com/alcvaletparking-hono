@@ -17,9 +17,8 @@ export const createBookingSchema = z.object({
     numVuelo: z.string().optional(),
     comentarios: z.string().max(500).optional(),
 
-    // Datos del usuario/precio
+    // Datos del usuario
     clienteId: z.uuid({ error: "El ID de usuario no es válido" }).optional(),
-    precio: z.number({ error: "El precio debe ser un número" }).positive({ error: "EL precio debe ser mayor a 0" }),
 
     // Contacto y Conductor
     nombreCompleto: z.string({ error: "El nombre es obligatorio" }).min(3),
