@@ -8,8 +8,8 @@ const app = new Hono();
 // --- CONFIGURACIÓN CORS ---
 app.use('/*', cors({
     origin: [
-        'http://localhost:4321', // Astro en desarrollo
-        'http://localhost:5173', // Svelte (Vite) en desarrollo
+        // 'http://localhost:4321', // Astro en desarrollo
+        // 'http://localhost:5173', // Svelte (Vite) en desarrollo
         'https://alcvaletparking.com', // dominio de producción (Astro)
         'https://admin.alcvaletparking.com' // dominio de admin (Svelte)
     ],
