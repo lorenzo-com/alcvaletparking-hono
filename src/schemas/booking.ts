@@ -11,7 +11,7 @@ export const createBookingSchema = z.object({
     // Datos del vehículo
     tipoPlaza: z.enum(['Plaza Aire Libre', 'Plaza Cubierta'], { error: "Debes elegir entre 'Plaza Aire Libre' o 'Plaza Cubierta'" }),
     coche: z.string({ error: "El modelo de coche es obligatorio" }).min(1),
-    matricula: z.string().min(4).toUpperCase(),
+    matricula: z.string().min(1).toUpperCase(),
 
     // Datos del vuelo y observaciones
     numVuelo: z.string().optional(),
@@ -21,13 +21,13 @@ export const createBookingSchema = z.object({
     clienteId: z.uuid({ error: "El ID de usuario no es válido" }).optional(),
 
     // Contacto y Conductor
-    nombreCompleto: z.string({ error: "El nombre es obligatorio" }).min(3),
-    telefono: z.string({ error: "El teléfono es obligatorio" }).min(9),
-    email: z.email({ error: "El formato del email no es correcto" }),
-    nosConociste: z.string({ error: "Como nos conociste es obligatorio" }),
+    nombreCompleto: z.string({ error: "El nombre es obligatorio" }).min(1).optional(),
+    telefono: z.string({ error: "El teléfono es obligatorio" }).min(1).optional(),
+    email: z.email({ error: "El formato del email no es correcto" }).optional(),
+    nosConociste: z.string({ error: "Como nos conociste es obligatorio" }).optional(),
 
     // Datos fiscales/dirección
-    cif: z.string().min(6).optional(),
-    nombreConductor: z.string().min(3).optional(), // Si es diferente al 'name' principal
-    direccion: z.string().min(5).optional()
+    cif: z.string().min(1).optional(),
+    nombreConductor: z.string().min(1).optional(),
+    direccion: z.string().min(1).optional()
 });
