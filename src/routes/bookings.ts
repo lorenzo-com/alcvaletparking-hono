@@ -4,7 +4,6 @@ import { createBookingSchema } from '../schemas/booking';
 import { Bindings } from '../types';
 import { calculatePriceSchema } from '../schemas/pricing';
 import { calculateParkingPrice } from '../utils/pricing';
-import { success } from 'zod';
 
 const bookings = new Hono<{ Bindings: Bindings }>();
 
