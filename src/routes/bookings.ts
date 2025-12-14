@@ -1,9 +1,13 @@
 import { Hono } from 'hono';
 import { createClient } from '@supabase/supabase-js';
+import { Resend } from 'resend';
 import { createBookingSchema } from '../schemas/booking';
 import { Bindings } from '../types';
 import { calculatePriceSchema } from '../schemas/pricing';
 import { calculateParkingPrice } from '../utils/pricing';
+import { generateBookingPDF } from '../utils/emailService';
+import { Buffer } from 'node:buffer';
+import { getBookingEmailHtml } from '../utils/emailTemplate';
 
 const bookings = new Hono<{ Bindings: Bindings }>();
 
@@ -119,6 +123,33 @@ bookings.post('/', async (c) => {
                 message: 'Error al guardar en la base de datos',
                 details: error.message
             }, 500);
+        }
+
+        try {
+            // Generar el PDF (Binario)
+            const pdfUint8Array = generateBookingPDF(newBooking);
+            const pdfBuffer = Buffer.from(pdfUint8Array);
+            
+            // GENERAR HTML (Plantilla Visual)
+            const htmlContent = getBookingEmailHtml(newBooking);
+
+            // Nos conectamos a Resend a través de la API KEY
+            const resend = new Resend(c.env.RESEND_API_KEY);
+
+            await resend.emails.send({
+                from: 'ALC Valet Parking <reservas@alcvaletparking.com>',
+                to: newBooking.email,
+                subject: `Reserva Confirmada #${newBooking.id}`,
+                html: htmlContent,
+                attachments: [
+                    {
+                        filename: `Ticket_${newBooking.id}.pdf`,
+                        content: pdfBuffer
+                    },
+                ]
+            })
+        } catch (err) {
+            console.error("Error generando/enviando PDF:", err);
         }
 
         return c.json({
