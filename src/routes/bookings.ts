@@ -36,15 +36,59 @@ bookings.post('/', async (c) => {
 
         // Si todo va bien, usamos los datos LIMPIOS y TIPADOS
         const data = result.data;
+        // Iniciar Supabase (Usando las variables de entorno de Hono)
+        const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY);
+
+        // Datos del cliente
+        let clienteData = {};
+
+        // USUARIO ESTA REGISTRADO (Buscamos en BD su información)
+        if (data.clienteId) {
+            const { data: perfil, error } = await supabase
+                .from('clientes')
+                .select(`
+                    nombre,
+                    telefono,
+                    direccion,
+                    cif,
+                    nos_conociste,
+                    usuarios (email)
+                    `)
+                .eq('id', data.clienteId)
+                .single();
+
+            if (error || !perfil) {
+                return c.json({
+                    success: false,
+                    message: `No se ha encontrado el usuario con id ${data.clienteId}`
+                }, 500);
+            }
+
+            clienteData = {
+                nombre_completo: perfil.nombre,
+                email: perfil.usuarios?.[0]?.email,
+                telefono: perfil.telefono,
+                direccion: perfil.direccion,
+                cif: perfil.cif,
+                nos_conociste: perfil.nos_conociste
+            }
+        } else {
+            clienteData = {
+                nombre_completo: data.nombreCompleto,
+                email: data.email,
+                telefono: data.telefono,
+                nos_conociste: data.nosConociste,
+                cif: data.cif || null,
+                direccion: data.direccion || null,
+                nombre_conductor: data.nombreConductor || null
+            }
+        };
 
         // Re-calcumos el precio por seguridad (Para que desde el frontend no nos envien cualquier precio)
         const { totalPrice } = calculateParkingPrice(data.fechaEntrada, data.fechaSalida, data.tipoPlaza);
 
-        // Iniciar Supabase (Usando las variables de entorno de Hono)
-        const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY);
-
         // Es buena práctica convertir camelCase a snake_case para SQL
-        const dbData = {
+        const reservaPayload = {
             fecha_entrada: data.fechaEntrada || null,
             hora_entrada: data.horaEntrada || null,
             fecha_salida: data.fechaSalida || null,
@@ -54,21 +98,17 @@ bookings.post('/', async (c) => {
             matricula: data.matricula,
             num_vuelo: data.numVuelo || null,
             comentarios: data.comentarios || null,
+
             cliente_id: data.clienteId || null, // Importante: Este ID debe existir en auth.users o tu tabla de users
             precio: totalPrice,
-            nombre_completo: data.nombreCompleto,
-            telefono: data.telefono,
-            email: data.email,
-            nos_conociste: data.nosConociste,
-            cif: data.cif,
-            nombre_conductor: data.nombreConductor,
-            direccion: data.direccion
+
+            ...clienteData
         };
 
         // Insertar en Supabase
-        const { data: insertedBooking, error } = await supabase
+        const { data: newBooking, error } = await supabase
             .from('reservas')
-            .insert(dbData)
+            .insert(reservaPayload)
             .select()
             .single();
 
@@ -84,10 +124,9 @@ bookings.post('/', async (c) => {
         return c.json({
             success: true,
             message: 'Reserva creada correctamente',
-            data: insertedBooking
+            data: newBooking
         }, 201);
     } catch (e) {
-        console.error("Error al crear la reserva: ", e);
         return c.json({
             success: false,
             message: 'Error interno del servidor',
