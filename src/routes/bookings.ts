@@ -64,11 +64,9 @@ bookings.post('/', async (c) => {
                 }, 500);
             }
 
-            console.log('Email: ', perfil.usuarios[0].email)
-
             clienteData = {
                 nombre_completo: perfil.nombre,
-                email: perfil.usuarios[0]?.email,
+                email: (perfil.usuarios as any)?.email,
                 telefono: perfil.telefono,
                 direccion: perfil.direccion,
                 cif: perfil.cif,
