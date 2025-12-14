@@ -6,7 +6,7 @@
   "compatibility_date": "2025-11-21",
   "vars": {
     "SUPABASE_URL": "https://dwgsfelqmurgitdsklch.supabase.co",
-    "SUPABASE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3Z3NmZWxxbXVyZ2l0ZHNrbGNoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Mjg1OTY3MywiZXhwIjoyMDc4NDM1NjczfQ.cd2xWamMG97O7POspG2tfM9_ehSdl6ptPvEVI2oMF4A",
+    "SUPABASE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3Z3NmZWxxbXVyZ2l0ZHNrbGNoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTczMTAwMCwiZXhwIjoyMDgxMDkxMDAwfQ.tb8Pul8RSu2_Oe1GJtgDhqUvwCwz3YfhJqAO8e1MHbQ",
     "RESEND_API_KEY": "re_TFGy5gyG_4cNhXYwwD8UnA6ZY5ZgRYj55"
   }
   // "compatibility_flags": [
