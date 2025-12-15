@@ -11,7 +11,8 @@ app.use('/*', cors({
         'http://localhost:4321', // Astro en desarrollo
         'http://localhost:5173', // Svelte (Vite) en desarrollo
         'https://alcvaletparking.com', // dominio de producción (Astro)
-        'https://admin.alcvaletparking.com' // dominio de admin (Svelte)
+        'https://admin.alcvaletparking.com', // dominio de admin (Svelte)
+        'https://alcvaletparking-hono.lorenzokrastev1000.workers.dev' // Dominio de cloudflare
     ],
     allowMethods: ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE'],
     allowHeaders: ['Content-Type', 'Authorization', 'apikey', 'X-Client-Info'],
