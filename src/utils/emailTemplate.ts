@@ -10,19 +10,16 @@ interface EmailData {
   coche: string;
   matricula: string;
   precio: number;
+  num_reserva: number;
 }
 
 export const getBookingEmailHtml = (data: EmailData): string => {
   // --- LÓGICA DE VISUALIZACIÓN ---
   // Preparamos los textos antes de inyectarlos en el HTML para mantenerlo limpio
   
-  const entradaDisplay = data.fecha_entrada 
-    ? `${data.fecha_entrada}${data.hora_entrada ? ' - ' + data.hora_entrada : ''}`
-    : '<span style="color: #999;">Sin fecha asignada</span>';
+  const entradaDisplay = `${data.fecha_entrada || "Sin fecha"} ${data.hora_entrada || ""}`;
 
-  const salidaDisplay = data.fecha_salida 
-    ? `${data.fecha_salida}${data.hora_salida ? ' - ' + data.hora_salida : ''}`
-    : '<span style="color: #999;">Sin fecha asignada</span>';
+  const salidaDisplay = `${data.fecha_salida || "Sin fecha"} ${data.hora_salida || ""}`;
 
   // -------------------------------
 
@@ -159,24 +156,24 @@ export const getBookingEmailHtml = (data: EmailData): string => {
           
           <div class="details-box">
             <div class="detail-row">
-              <span class="label">Fecha Entrada:</span>
+              <span class="label">Fecha Entrada: </span>
               <span class="value">${entradaDisplay}</span>
             </div>
             <div class="detail-row">
-              <span class="label">Fecha Salida:</span>
+              <span class="label">Fecha Salida: </span>
               <span class="value">${salidaDisplay}</span>
             </div>
             <div class="detail-row">
-              <span class="label">Vehículo:</span>
+              <span class="label">Vehículo: </span>
               <span class="value">${data.coche}</span>
             </div>
              <div class="detail-row">
-              <span class="label">Matrícula:</span>
-              <span class="value" style="text-transform: uppercase;">${data.matricula}</span>
+              <span class="label">Matrícula: </span>
+              <span class="value">${data.matricula}</span>
             </div>
             <div class="detail-row">
-              <span class="label">Precio Total:</span>
-              <span class="value" style="color: #ff6600; font-size: 1.1em;">${data.precio} €</span>
+              <span class="label">Precio Total: </span>
+              <span class="value" style="color: #ff6600;">${data.precio} €</span>
             </div>
           </div>
 

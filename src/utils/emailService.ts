@@ -20,6 +20,7 @@ export interface BookingData {
     cif?: string;
     nombre_conductor?: string;
     direccion?: string;
+    num_reserva: number;
 }
 
 export const generateBookingPDF = (reservation: BookingData): Uint8Array => {
@@ -73,11 +74,11 @@ export const generateBookingPDF = (reservation: BookingData): Uint8Array => {
 
     // --- TABLA DATOS CLIENTE ---
     const clientData = [
-        ["Recibo Nº", reservation.id],
+        ["Recibo Nº", reservation.num_reserva],
         ["Nombre Completo/Razón Social:", reservation.nombre_completo],
-        ["CIF:", reservation.cif || ""],
-        ["Nombre del conductor:", reservation.nombre_conductor || ""],
-        ["Dirección Completa:", reservation.direccion || ""],
+        ["CIF:", reservation.cif || "---"],
+        ["Nombre del conductor:", reservation.nombre_conductor || "---"],
+        ["Dirección de facturación:", reservation.direccion || "---"],
         ["Teléfono:", reservation.telefono]
     ];
 
@@ -105,7 +106,7 @@ export const generateBookingPDF = (reservation: BookingData): Uint8Array => {
         ["Matrícula:", reservation.matricula],
         ["Tipo de plaza:", reservation.tipo_plaza],
         ["Fecha Entrada:", `${reservation.fecha_entrada || "Sin fecha"} ${reservation.hora_entrada || ""}`],
-        ["Fecha Salida:", `${reservation.fecha_salida || "Sin fecha"} ${reservation.hora_entrada || ""}`],
+        ["Fecha Salida:", `${reservation.fecha_salida || "Sin fecha"} ${reservation.hora_salida || ""}`],
         ["Terminal (Entrada):", reservation.terminal_entrada],
         ["Terminal (Vuelta):", reservation.terminal_salida],
         ["Nº Vuelo de vuelta:", reservation.num_vuelo || ""]

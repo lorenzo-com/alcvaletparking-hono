@@ -139,11 +139,11 @@ bookings.post('/', async (c) => {
             await resend.emails.send({
                 from: 'ALC Valet Parking <reservas@alcvaletparking.com>',
                 to: newBooking.email,
-                subject: `Reserva Confirmada #${newBooking.id}`,
+                subject: `Reserva Confirmada #${newBooking.num_reserva}`,
                 html: htmlContent,
                 attachments: [
                     {
-                        filename: `Ticket_${newBooking.id}.pdf`,
+                        filename: `Ticket_${newBooking.num_reserva}.pdf`,
                         content: pdfBuffer
                     },
                 ]
