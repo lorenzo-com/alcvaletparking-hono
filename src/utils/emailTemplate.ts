@@ -173,11 +173,11 @@ export const getBookingEmailHtml = (data: EmailData): string => {
             </div>
             <div class="detail-row">
               <span class="label">Precio Total: </span>
-              <span class="value" style="color: #ff6600;">${data.precio} €</span>
+              <span class="value" style="color: #ff6600;">${data.precio}€</span>
             </div>
           </div>
 
-          <p>📎 Hemos adjuntado tu <strong>ticket oficial en PDF</strong> a este correo. Es recomendable tenerlo a mano al llegar al aeropuerto.</p>
+          <p>📎 Hemos adjuntado tu <strong>recibo en PDF</strong> a este correo.</p>
 
           <div class="btn-container">
             <a href="https://www.alcvaletparking.com" class="btn">Ir a la Web</a>
@@ -185,9 +185,6 @@ export const getBookingEmailHtml = (data: EmailData): string => {
         </div>
 
         <div class="footer">
-          <div class="footer-links">
-             <span>Contacto</span> • <span>Ayuda</span> • <span>Términos</span>
-          </div>
           <p>© ${new Date().getFullYear()} ALC Valet Parking. Todos los derechos reservados.</p>
           <p>Ctra. Aeropuerto-Torrellano s/n CV-852, 03320 Torrellano</p>
         </div>
