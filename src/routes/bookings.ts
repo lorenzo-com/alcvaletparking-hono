@@ -99,8 +99,8 @@ bookings.post('/', async (c) => {
             hora_salida: data.horaSalida || null,
             tipo_plaza: data.tipoPlaza,
             coche: data.coche,
-            matricula: data.matricula,
-            num_vuelo: data.numVuelo || null,
+            matricula: data.matricula.toUpperCase(),
+            num_vuelo: data.numVuelo?.toUpperCase() || null,
             comentarios: data.comentarios || null,
 
             cliente_id: data.clienteId || null, // Importante: Este ID debe existir en auth.users o tu tabla de users
