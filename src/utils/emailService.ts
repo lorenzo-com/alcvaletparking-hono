@@ -109,7 +109,7 @@ export const generateBookingPDF = (reservation: BookingData): Uint8Array => {
         ["Fecha Salida:", `${reservation.fecha_salida || "Sin fecha"} ${reservation.hora_salida || ""}`],
         ["Terminal (Entrada):", reservation.terminal_entrada],
         ["Terminal (Vuelta):", reservation.terminal_salida],
-        ["Nº Vuelo de vuelta:", reservation.num_vuelo || ""]
+        ["Nº Vuelo de vuelta:", reservation.num_vuelo || "---"]
     ];
 
     autoTable(doc, {
