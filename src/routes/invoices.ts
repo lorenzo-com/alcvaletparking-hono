@@ -122,4 +122,42 @@ invoices.post('/generate', async (c) => {
     }
 });
 
+// GET /api/invoices/sequence -> Consultar el siguiente número
+invoices.get('/sequence', async (c) => {
+    const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY);
+    
+    // Asumimos que tu tabla tiene id=TRUE como vimos en la imagen
+    const { data, error } = await supabase
+        .from('factura_secuencia')
+        .select('siguiente_numero')
+        .single();
+
+    if (error) return c.json({ success: false, message: error.message }, 500);
+    
+    return c.json({ success: true, numero: data.siguiente_numero });
+});
+
+// PUT /api/invoices/sequence -> Modificar manualmente
+invoices.put('/sequence', async (c) => {
+    const body = await c.req.json();
+    const { nuevoNumero } = body;
+    const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY);
+
+    // Validación básica de seguridad
+    if (!nuevoNumero || typeof nuevoNumero !== 'number') {
+        return c.json({ success: false, message: 'Número inválido' }, 400);
+    }
+
+    const { error } = await supabase
+        .from('factura_secuencia')
+        .update({ siguiente_numero: nuevoNumero })
+        // Usamos el filtro gt(0) como truco para actualizar la única fila existente
+        // O si prefieres ser estricto: .eq('id', true) según tu captura de pantalla
+        .gt('siguiente_numero', 0); 
+
+    if (error) return c.json({ success: false, message: error.message }, 500);
+
+    return c.json({ success: true, message: 'Secuencia actualizada correctamente' });
+});
+
 export { invoices };
