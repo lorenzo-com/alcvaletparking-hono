@@ -220,8 +220,12 @@ export const generateBookingPDF = (reservation: BookingData): Uint8Array => {
 export const generateInvoicePDF = (invoice: InvoiceData): Uint8Array => {
     const doc = new jsPDF();
 
-    // --- HEADER (Título y Fecha) ---
+    // --- CÁLCULOS LEGALES (IMPUESTOS) ---
+    const sumaTotal = Number(invoice.precio);
+    const baseImponible = sumaTotal / 1.21;
+    const ivaCantidad = sumaTotal - baseImponible;
 
+    // --- HEADER (Título y Fecha) ---
     // Título (Izq)
     doc.setFont("helvetica", "bold");
     doc.setFontSize(20);
@@ -346,9 +350,9 @@ export const generateInvoicePDF = (invoice: InvoiceData): Uint8Array => {
     autoTable(doc, {
         startY: finalY,
         body: [
-            ["Base Imp.", `${invoice.precio} €`],
-            ["21% IVA", `${invoice.precio} €`],
-            ["TOTAL", `${invoice.precio} €`]
+            ["Base Imp.", `${baseImponible.toFixed(2)} €`],
+            ["21% IVA", `${ivaCantidad.toFixed(2)} €`],
+            ["TOTAL", `${sumaTotal.toFixed(2)} €`]
         ],
         theme: 'grid',
         styles: { fontSize: 10, cellPadding: 3 },
