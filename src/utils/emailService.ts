@@ -23,6 +23,15 @@ export interface BookingData {
     num_reserva: number;
 }
 
+// --- Función para formatear fechas a dd/mm/yyyy ---
+const formatearFecha = (fechaStr: string) => {
+    if (!fechaStr) return 'Sin fecha';
+    // Truco: Si la fecha viene como "2025-12-17", creamos el objeto fecha
+    // y lo pasamos a local 'es-ES' (España)
+    const fecha = new Date(fechaStr);
+    return fecha.toLocaleDateString('es-ES');
+};
+
 export const generateBookingPDF = (reservation: BookingData): Uint8Array => {
     const doc = new jsPDF();
 
@@ -105,8 +114,8 @@ export const generateBookingPDF = (reservation: BookingData): Uint8Array => {
         ["Marca, Modelo y Color:", reservation.coche],
         ["Matrícula:", reservation.matricula],
         ["Tipo de plaza:", reservation.tipo_plaza],
-        ["Fecha Entrada:", `${reservation.fecha_entrada || "Sin fecha"} ${reservation.hora_entrada || ""}`],
-        ["Fecha Salida:", `${reservation.fecha_salida || "Sin fecha"} ${reservation.hora_salida || ""}`],
+        ["Fecha Entrada:", `${formatearFecha(reservation.fecha_entrada)} ${reservation.hora_entrada || ""}`],
+        ["Fecha Salida:", `${formatearFecha(reservation.fecha_salida)} ${reservation.hora_salida || ""}`],
         ["Terminal (Entrada):", reservation.terminal_entrada],
         ["Terminal (Vuelta):", reservation.terminal_salida],
         ["Nº Vuelo de vuelta:", reservation.num_vuelo || "---"]
@@ -173,14 +182,14 @@ export const generateBookingPDF = (reservation: BookingData): Uint8Array => {
     // --- FIRMAS ---
     const boxHeight = 30;
     const boxWidth = 80;
-    
+
     // Caja Cliente (Izquierda)
     doc.setFont("helvetica", "bold");
-    doc.text("Conforme Cliente", 14 + (boxWidth/2), finalY, { align: 'center' });
+    doc.text("Conforme Cliente", 14 + (boxWidth / 2), finalY, { align: 'center' });
     doc.rect(14, finalY + 2, boxWidth, boxHeight); // El recuadro
 
     // Caja ALC (Derecha)
-    doc.text("Conforme ALC", 110 + (boxWidth/2), finalY, { align: 'center' });
+    doc.text("Conforme ALC", 110 + (boxWidth / 2), finalY, { align: 'center' });
     doc.rect(110, finalY + 2, boxWidth, boxHeight); // El recuadro
 
     // --- RETORNAR BUFFER ---

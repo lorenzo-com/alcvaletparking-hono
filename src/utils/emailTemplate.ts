@@ -13,13 +13,22 @@ interface EmailData {
   num_reserva: number;
 }
 
+// --- Función para formatear fechas a dd/mm/yyyy ---
+	const formatearFecha = (fechaStr: string | undefined) => {
+		if(!fechaStr) return 'Sin fecha';
+		// Truco: Si la fecha viene como "2025-12-17", creamos el objeto fecha
+		// y lo pasamos a local 'es-ES' (España)
+		const fecha = new Date(fechaStr);
+		return fecha.toLocaleDateString('es-ES');
+	};
+
 export const getBookingEmailHtml = (data: EmailData): string => {
   // --- LÓGICA DE VISUALIZACIÓN ---
   // Preparamos los textos antes de inyectarlos en el HTML para mantenerlo limpio
   
-  const entradaDisplay = `${data.fecha_entrada || "Sin fecha"} ${data.hora_entrada || ""}`;
+  const entradaDisplay = `${formatearFecha(data.fecha_entrada)} ${data.hora_entrada || ""}`;
 
-  const salidaDisplay = `${data.fecha_salida || "Sin fecha"} ${data.hora_salida || ""}`;
+  const salidaDisplay = `${formatearFecha(data.fecha_salida)} ${data.hora_salida || ""}`;
 
   // -------------------------------
 
