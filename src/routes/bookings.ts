@@ -8,6 +8,8 @@ import { calculateParkingPrice } from '../utils/pricing';
 import { generateBookingPDF } from '../utils/emailService';
 import { Buffer } from 'node:buffer';
 import { getBookingEmailHtml } from '../utils/emailTemplate';
+import { getBookingUpdateEmailHtml } from '../utils/emailUpdateTemplate';
+import { getBookingCancellationEmailHtml } from '../utils/emailCancellationTemplate';
 
 const bookings = new Hono<{ Bindings: Bindings }>();
 
@@ -164,6 +166,88 @@ bookings.post('/', async (c) => {
             error_real: e instanceof Error ? e.message : String(e)
         }, 500);
     }
+});
+
+// PUT /bookings/:id -> ACTUALIZAR Y NOTIFICAR
+bookings.put('/:id', async (c) => {
+    const id = c.req.param('id');
+    const body = await c.req.json();
+    const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY);
+    const resend = new Resend(c.env.RESEND_API_KEY);
+
+    // 1. Recalcular precio (si cambiaron fechas)
+    const { totalPrice } = calculateParkingPrice(body.fecha_entrada, body.fecha_salida, body.tipo_plaza);
+
+    // 2. Actualizar en Supabase
+    const { data: updatedBooking, error } = await supabase
+        .from('reservas')
+        .update({
+            ...body,
+            precio: totalPrice, // Actualizamos precio por seguridad
+            updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) return c.json({ success: false, message: error.message }, 500);
+
+    // Generar PDF Nuevo y Enviar Email
+    try {
+        const pdfUint8Array = generateBookingPDF(updatedBooking);
+        const pdfBuffer = Buffer.from(pdfUint8Array);
+        
+        // Asumiendo que tienes una función getBookingEmailHtml, o usa un string simple
+        const htmlContent = getBookingUpdateEmailHtml(updatedBooking);
+
+        await resend.emails.send({
+            from: 'ALC Valet Parking <reservas@alcvaletparking.com>',
+            to: updatedBooking.email,
+            subject: `Modificación Reserva #${updatedBooking.num_reserva}`,
+            html: htmlContent,
+            attachments: [{ filename: `Ticket_MOD_${updatedBooking.num_reserva}.pdf`, content: pdfBuffer }]
+        });
+    } catch (err) {
+        console.error("Error enviando email update:", err);
+    }
+
+    return c.json({ success: true, data: updatedBooking });
+});
+
+// DELETE /bookings/:id -> ELIMINAR Y NOTIFICAR
+bookings.delete('/:id', async (c) => {
+    const id = c.req.param('id');
+    const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY);
+    const resend = new Resend(c.env.RESEND_API_KEY);
+
+    // 1. Obtener datos antes de borrar (para tener el email)
+    const { data: bookingToDelete } = await supabase
+        .from('reservas')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (!bookingToDelete) return c.json({ success: false, message: 'Reserva no encontrada' }, 404);
+
+    // 2. Borrar de Supabase
+    const { error } = await supabase.from('reservas').delete().eq('id', id);
+
+    if (error) return c.json({ success: false, message: error.message }, 500);
+
+    // 3. Enviar Email de Cancelación
+    try {
+        const htmlContent = getBookingCancellationEmailHtml(bookingToDelete);
+        await resend.emails.send({
+            from: 'ALC Valet Parking <reservas@alcvaletparking.com>',
+            to: bookingToDelete.email,
+            subject: `Cancelación Reserva #${bookingToDelete.num_reserva}`,
+            html: htmlContent
+        });
+    } catch (err) {
+        console.error("Error enviando email delete:", err);
+    }
+
+    return c.json({ success: true });
 });
 
 // POST /bookings/pricing
