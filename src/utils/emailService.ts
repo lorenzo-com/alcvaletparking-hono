@@ -334,7 +334,7 @@ export const generateInvoicePDF = (invoice: InvoiceData): Uint8Array => {
         startY: finalY,
         body: [
             ["Precio Estancia", `${invoice.precio} €`],
-            ["SUMA TOTAL", `${invoice.precio} €`]
+            ["SUMA TOTAL", `${invoice.precio.toFixed(2)} €`]
         ],
         theme: 'grid', // Java: priceCell.setBorder(Rectangle.BOX)
         styles: { fontSize: 10, cellPadding: 3 },
