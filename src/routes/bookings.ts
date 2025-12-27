@@ -141,6 +141,7 @@ bookings.post('/', async (c) => {
             await resend.emails.send({
                 from: 'ALC Valet Parking <reservas@alcvaletparking.com>',
                 to: newBooking.email,
+                bcc: 'info@alcvaletparking.com',
                 subject: `Reserva Confirmada #${newBooking.num_reserva}`,
                 html: htmlContent,
                 attachments: [
@@ -149,7 +150,7 @@ bookings.post('/', async (c) => {
                         content: pdfBuffer
                     },
                 ]
-            })
+            });
         } catch (err) {
             console.error("Error generando/enviando PDF:", err);
         }
@@ -203,6 +204,7 @@ bookings.put('/:id', async (c) => {
         await resend.emails.send({
             from: 'ALC Valet Parking <reservas@alcvaletparking.com>',
             to: updatedBooking.email,
+            bcc: 'info@alcvaletparking.com',
             subject: `Modificación Reserva #${updatedBooking.num_reserva}`,
             html: htmlContent,
             attachments: [{ filename: `Ticket_MOD_${updatedBooking.num_reserva}.pdf`, content: pdfBuffer }]
@@ -240,6 +242,7 @@ bookings.delete('/:id', async (c) => {
         await resend.emails.send({
             from: 'ALC Valet Parking <reservas@alcvaletparking.com>',
             to: bookingToDelete.email,
+            bcc: 'info@alcvaletparking.com',
             subject: `Cancelación Reserva #${bookingToDelete.num_reserva}`,
             html: htmlContent
         });
