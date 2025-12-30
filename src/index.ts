@@ -11,6 +11,7 @@ app.use('/*', cors({
     origin: [
         'http://localhost:4321', // Astro en desarrollo
         'http://localhost:5173', // Svelte (Vite) en desarrollo
+        'https://www.alcvaletparking.com', // dominio de producción (Astro)
         'https://alcvaletparking.com', // dominio de producción (Astro)
         'https://admin.alcvaletparking.com', // dominio de admin (Svelte)
         'https://alc-valet-parking-astro.pages.dev', // Dominio de cloudflare (Cliente)
