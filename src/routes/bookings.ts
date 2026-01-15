@@ -176,15 +176,11 @@ bookings.put('/:id', async (c) => {
     const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY);
     const resend = new Resend(c.env.RESEND_API_KEY);
 
-    // 1. Recalcular precio (si cambiaron fechas)
-    const { totalPrice } = calculateParkingPrice(body.fecha_entrada, body.fecha_salida, body.tipo_plaza);
-
     // 2. Actualizar en Supabase
     const { data: updatedBooking, error } = await supabase
         .from('reservas')
         .update({
             ...body,
-            precio: totalPrice, // Actualizamos precio por seguridad
             updated_at: new Date().toISOString()
         })
         .eq('id', id)
