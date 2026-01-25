@@ -3,10 +3,10 @@ import autoTable from 'jspdf-autotable';
 
 export interface BookingData {
     id: string;
-    fecha_entrada: string;
-    hora_entrada: string;
-    fecha_salida: string;
-    hora_salida: string;
+    fecha_entrada?: string;
+    hora_entrada?: string;
+    fecha_salida?: string;
+    hora_salida?: string;
     coche: string;
     matricula: string;
     tipo_plaza: string;
