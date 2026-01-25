@@ -83,7 +83,7 @@ bookings.post('/', async (c) => {
                 nombre_completo: data.nombreCompleto,
                 email: data.email,
                 telefono: data.telefono,
-                nos_conociste: data.nosConociste,
+                nos_conociste: data.nosConociste || null,
                 cif: data.cif || null,
                 direccion: data.direccion || null,
                 nombre_conductor: data.nombreConductor || null
