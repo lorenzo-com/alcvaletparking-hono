@@ -10,7 +10,7 @@ interface EmailData {
   matricula: string;
   precio: number;
   num_reserva: number;
-  comentarios?: string;
+  comentarios: string | null;
 }
 
 // --- Función para formatear fechas ---
