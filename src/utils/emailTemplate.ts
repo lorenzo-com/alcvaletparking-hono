@@ -7,8 +7,6 @@ interface EmailData {
   hora_entrada?: string;
   fecha_salida?: string;
   hora_salida?: string;
-  coche: string;
-  matricula: string;
   precio: number;
   num_reserva: number;
   comentarios: string | null;
@@ -77,9 +75,22 @@ export const getBookingEmailHtml = (data: EmailData): string => {
             padding: 40px; 
             line-height: 1.6; 
         }
-        .content h2 {
-            color: #1a1a1a;
-            margin-top: 0;
+
+        /* TEXTO INFORMATIVO MULTI-IDIOMA */
+        .info-block {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eeeeee;
+        }
+        .info-block:last-child {
+            border-bottom: none;
+        }
+        .info-title {
+            font-weight: bold;
+            color: #ff6600;
+            display: block;
+            margin-bottom: 5px;
+            text-transform: uppercase;
         }
 
         /* CAJA DE DETALLES */
@@ -160,9 +171,31 @@ export const getBookingEmailHtml = (data: EmailData): string => {
         </div>
         
         <div class="content">
-          <h2>Reserva Confirmada</h2>
           <p>Hola <strong>${data.nombre_completo}</strong>,</p>
-          <p>Hemos recibido correctamente tu reserva. A continuación encontrarás el resumen de los detalles.</p>
+
+          <div class="info-block">
+            <span class="info-title">CONFIRMACIÓN DE RESERVA</span>
+            <p style="margin: 5px 0;">Muchas gracias por elegir los servicios de ALC VALET PARKING.</p>
+            <p style="margin: 5px 0;"><strong>PUNTO DE ENCUENTRO AEROPUERTO:</strong> PLANTA DE SALIDAS/ EN EL PRINCIPIO DEL PARKING EXPRESS.</p>
+            <p style="margin: 5px 0;"><strong>MÓVIL:</strong> 601 356 356 (NO POR VÍA WHATSAPP)</p>
+            <p style="margin: 5px 0;">LLAME CON EL NÚMERO DE CONTACTO CON *15 O 20 MINUTOS DE ANTELACIÓN.</p>
+          </div>
+
+          <div class="info-block">
+            <span class="info-title">BOOKING CONFIRMATION</span>
+            <p style="margin: 5px 0;">Thank you very much for choosing the services of ALC VALET PARKING.</p>
+            <p style="margin: 5px 0;"><strong>AIRPORT MEETING POINT:</strong> DEPARTURES FLOOR/ AT THE BEGINNING OF THE EXPRESS PARKING.</p>
+            <p style="margin: 5px 0;"><strong>MOBILE:</strong> 601 356 356 (NOT VIA WHATSAPP)</p>
+            <p style="margin: 5px 0;">CALL WITH THE CONTACT NUMBER WITH *15 OR 20 MINUTES IN ADVANCE.</p>
+          </div>
+
+          <div class="info-block">
+             <span class="info-title">BOEKINGSBEVESTIGING</span>
+             <p style="margin: 5px 0;">Hartelijk dank dat u voor de diensten van ALC VALET PARKING hebt gekozen.</p>
+             <p style="margin: 5px 0;"><strong>VERZAMELPUNT OP DE LUCHTHAVEN:</strong> VERTREKVERDIEPING/ AAN HET BEGIN VAN DE EXPRESS PARKING.</p>
+             <p style="margin: 5px 0;"><strong>MOBIEL:</strong> 601 356 356 (NIET VIA WHATSAPP)</p>
+             <p style="margin: 5px 0;">BEL HET CONTACTNUMMER 15 OF 20 MINUTEN VAN TEVOREN.</p>
+          </div>
           
           <div class="details-box">
             <div class="detail-row">
@@ -174,16 +207,8 @@ export const getBookingEmailHtml = (data: EmailData): string => {
               <span class="value">${salidaDisplay}</span>
             </div>
             <div class="detail-row">
-              <span class="label">Vehículo: </span>
-              <span class="value">${data.coche}</span>
-            </div>
-             <div class="detail-row">
-              <span class="label">Matrícula: </span>
-              <span class="value">${data.matricula}</span>
-            </div>
-            <div class="detail-row">
               <span class="label">Precio Total: </span>
-              <span class="value" style="color: #ff6600;">${data.precio}€</span>
+              <span class="value">${data.precio}€</span>
             </div>
             <div class="detail-row">
               <span class="label">Comentarios: </span>
@@ -194,13 +219,12 @@ export const getBookingEmailHtml = (data: EmailData): string => {
           <p>📎 Hemos adjuntado tu <strong>recibo en PDF</strong> a este correo.</p>
 
           <div class="btn-container">
-            <a href="https://www.alcvaletparking.com" class="btn">Ir a la Web</a>
+            <a href="google.com/maps/place/Salidas+de+estacionamiento+exprés,+Aeropuerto+de+Alicante,+Alacant,+03195+L'Altet,+Alicante/@38.2875214,-0.5530595,3a,75y,292.99h,57.8t/data=!3m5!1e1!3m3!1sgoh4-bPzQJ5LkcAnLN7gig!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fpanoid%3Dgoh4-bPzQJ5LkcAnLN7gig%26w%3D900%26h%3D600%26ll%3D0.0,0.0%26yaw%3D292.0%26pitch%3D33.0%26thumbfov%3D98%26cb_client%3Dgmm.iv.android!4m2!3m1!1s0xd624b805ad3cc5d:0x800152e1058275e6?utm_source=mstt_0&g_ep=CAESBzI2LjMuMTEYACCBgQEqiAEsOTQyNjc3MjcsOTQyNzU0MDcsOTQyOTIxOTUsOTQyOTk1MzIsOTQyODQ0OTAsOTQyODA1NzYsOTQyMDczOTQsOTQyMDc1MDYsOTQyMDg1MDYsOTQyMTg2NTMsOTQyMjk4MzksOTQyNzUxNjgsOTQyNzk2MTksOTQyNjI3MzksMTAwNzk2MTg2QgJFUw%3D%3D&skid=db347f0e-c769-4577-8015-c0522b65c1d7&g_st=awb" class="btn">Punto de encuentro</a>
           </div>
         </div>
 
         <div class="footer">
           <p>© ${new Date().getFullYear()} ALC Valet Parking. Todos los derechos reservados.</p>
-          <p>Ctra. Aeropuerto-Torrellano s/n CV-852, 03320 Torrellano</p>
         </div>
       </div>
     </body>
