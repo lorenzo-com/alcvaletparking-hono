@@ -10,6 +10,7 @@ interface EmailData {
   matricula: string;
   precio: number;
   num_reserva: number;
+  comentarios?: string;
 }
 
 // --- Función para formatear fechas ---
@@ -20,7 +21,7 @@ const formatearFecha = (fechaStr: string | undefined) => {
 };
 
 export const getBookingUpdateEmailHtml = (data: EmailData): string => {
-  
+
   const entradaDisplay = `${formatearFecha(data.fecha_entrada)} ${data.hora_entrada || ""}`;
   const salidaDisplay = `${formatearFecha(data.fecha_salida)} ${data.hora_salida || ""}`;
 
@@ -168,6 +169,10 @@ export const getBookingUpdateEmailHtml = (data: EmailData): string => {
             <div class="detail-row">
               <span class="label">Precio Actualizado: </span>
               <span class="value" style="color: #ff6600;">${data.precio}€</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Comentarios: </span>
+              <span class="value">${data.comentarios ?? 'Sin comentarios'}</span>
             </div>
           </div>
 
