@@ -25,6 +25,7 @@ bookings.post('/', async (c) => {
 
         // Comprobamos si falló
         if (!result.success) {
+            console.log('Errores de validación: ', result.error.issues);
             // Recorremos los errores y creamos un array limpio
             const formattedErrors = result.error.issues.map((issue) => {
                 return {
@@ -91,7 +92,7 @@ bookings.post('/', async (c) => {
         };
 
         // Re-calcumos el precio por seguridad (Para que desde el frontend no nos envien cualquier precio)
-        const { totalPrice } = calculateParkingPrice(data.fechaEntrada, data.fechaSalida, data.tipoPlaza);
+        // const { totalPrice } = calculateParkingPrice(data.fechaEntrada, data.fechaSalida, data.tipoPlaza);
 
         // Es buena práctica convertir camelCase a snake_case para SQL
         const reservaPayload = {
@@ -106,7 +107,8 @@ bookings.post('/', async (c) => {
             comentarios: data.comentarios || null,
 
             cliente_id: data.clienteId || null, // Importante: Este ID debe existir en auth.users o tu tabla de users
-            precio: totalPrice,
+            // precio: totalPrice,
+            precio: data.precio, // Por ahora dejamos que venga del frontend
 
             ...clienteData
         };

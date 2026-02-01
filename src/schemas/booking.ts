@@ -8,6 +8,9 @@ export const createBookingSchema = z.object({
     fechaSalida: z.iso.date({ error: "La fecha debe tener formato YYYY-MM-DD" }).optional(),
     horaSalida: z.iso.time({ precision: -1, error: "La hora debe tener formato HH:MM" }).optional(),
 
+    // Precio reserva
+    precio: z.number({ error: "El precio debe ser un número" }).min(0),
+
     // Datos del vehículo
     tipoPlaza: z.enum(['Plaza Aire Libre', 'Plaza Cubierta'], { error: "Debes elegir entre 'Plaza Aire Libre' o 'Plaza Cubierta'" }),
     coche: z.string({ error: "El modelo de coche es obligatorio" }).min(1),
