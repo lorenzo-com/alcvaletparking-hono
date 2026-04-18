@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
 import bookings from './routes/bookings';
+import pricing from './routes/pricing';
 import { cors } from 'hono/cors';
 import { invoices } from './routes/invoices';
 
@@ -27,5 +28,6 @@ app.use('*', logger());
 
 app.route('/api/bookings', bookings);
 app.route('/api/invoices', invoices);
+app.route('/api/pricing', pricing);
 
 export default app;

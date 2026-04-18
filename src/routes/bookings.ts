@@ -252,7 +252,7 @@ bookings.delete('/:id', async (c) => {
 });
 
 // POST /bookings/pricing
-// Calculamos el precio de la reserva
+// Calculamos el precio de la reserva usando tarifas dinámicas de Supabase
 bookings.post('/pricing', async (c) => {
     const body = await c.req.json();
 
@@ -266,14 +266,16 @@ bookings.post('/pricing', async (c) => {
     const { fechaEntrada, fechaSalida, tipoPlaza } = result.data;
 
     try {
-        // Usamos la utilidad
-        const calculation = calculateParkingPrice(fechaEntrada, fechaSalida, tipoPlaza);
+        const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY);
+
+        // Leemos tarifas dinámicamente desde BD
+        const calculation = await calculateParkingPrice(fechaEntrada, fechaSalida, tipoPlaza, supabase);
 
         // Devolvemos el cálculo al frontend
         return c.json({
             success: true,
             data: calculation
-            // Esto devolverá: { totalPrice: 30 }
+            // Devolverá: { totalPrice: 30 }
         });
     } catch (e) {
         return c.json({
