@@ -1,8 +1,11 @@
 import { Hono } from 'hono';
 import { createClient } from '@supabase/supabase-js';
+import { Resend } from 'resend';
 import { generateInvoicePDF } from '../utils/emailService';
+import { Buffer } from 'node:buffer';
+import { Bindings } from '../types';
 
-const invoices = new Hono<{ Bindings: { SUPABASE_URL: string; SUPABASE_KEY: string } }>();
+const invoices = new Hono<{ Bindings: Bindings }>();
 
 // GET /invoices/check/:reservaId
 // Comprueba si existe factura y devuelve los datos para imprimir
@@ -87,6 +90,48 @@ invoices.post('/generate', async (c) => {
         await supabase.from('factura_secuencia').update({ siguiente_numero: nextNum + 1 }).gt('siguiente_numero', 0);
 
         facturaData = newFactura;
+
+        // --- ENVIAR CORREO AL ADMINISTRADOR CON EL PDF ---
+        // Obtenemos datos de la reserva para el correo
+        const { data: reservaData } = await supabase
+            .from('reservas')
+            .select('*')
+            .eq('id', reservaId)
+            .single();
+
+        try {
+            const pdfDataForEmail = {
+                ...reservaData,
+                num_factura: nextNum,
+                metodo_pago: metodoPago,
+                forma_pago: metodoPago
+            };
+            const pdfBytes = generateInvoicePDF(pdfDataForEmail);
+            const pdfBuffer = Buffer.from(pdfBytes);
+
+            const resend = new Resend(c.env.RESEND_API_KEY);
+            await resend.emails.send({
+                from: 'ALC Valet Parking <reservas@alcvaletparking.com>',
+                to: 'info@alcvaletparking.com',
+                subject: `Nueva Factura Generada - Factura Nº ${nextNum}`,
+                html: `<p>Se ha generado una nueva factura:</p>
+                       <ul>
+                         <li><strong>Nº Factura:</strong> ${nextNum}</li>
+                         <li><strong>Cliente:</strong> ${reservaData?.nombre_completo || 'No disponible'}</li>
+                         <li><strong>Importe:</strong> ${reservaData?.precio || '0'} €</li>
+                         <li><strong>Método de pago:</strong> ${metodoPago}</li>
+                       </ul>
+                       <p>Adjunto encontrará el PDF de la factura.</p>`,
+                attachments: [
+                    {
+                        filename: `Factura_${nextNum}.pdf`,
+                        content: pdfBuffer
+                    }
+                ]
+            });
+        } catch (emailErr) {
+            console.error('Error enviando correo de factura:', emailErr);
+        }
     }
 
     // 2. Obtenemos datos completos de la reserva
