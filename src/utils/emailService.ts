@@ -43,6 +43,25 @@ export interface InvoiceData {
     precio: number;
 }
 
+export interface ContractData {
+    num_contrato: number;
+    clientes: {
+        nombre: string;
+        email?: string;
+        telefono: string;
+        cif?: string;
+        direccion?: string;
+    };
+    coche: string;
+    matricula: string;
+    tipo_plaza: string;
+    fecha_inicio: string;
+    fecha_fin: string;
+    precio: number;
+    metodo_pago?: string;
+    pagado: boolean;
+}
+
 // --- Función para formatear fechas a dd/mm/yyyy ---
 const formatearFecha = (fechaStr: string | undefined) => {
     if (!fechaStr) return 'Sin fecha';
@@ -366,6 +385,156 @@ export const generateInvoicePDF = (invoice: InvoiceData): Uint8Array => {
     finalY = (doc as any).lastAutoTable.finalY + 10;
     doc.line(14, finalY, 195, finalY);
     finalY += 10;
+
+    // --- RETORNAR BUFFER ---
+    const pdfArrayBuffer = doc.output('arraybuffer');
+    return new Uint8Array(pdfArrayBuffer);
+}
+
+export const generateContractPDF = (contract: ContractData): Uint8Array => {
+    const doc = new jsPDF();
+    const fechaInicio = new Date(contract.fecha_inicio).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+    const fechaFin = new Date(contract.fecha_fin).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    // --- HEADER (Título y Fecha) ---
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text(`Contrato Nº ${contract.num_contrato}`, 14, 20);
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    const today = new Date().toLocaleDateString('es-ES', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+    const dateWidth = doc.getTextWidth(today);
+    doc.text(today, 195 - dateWidth, 20);
+
+    // --- DATOS EMPRESA ---
+    let yPos = 30;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    const companyLines = [
+        "ALC VALET PARKING",
+        "E72706781",
+        "Ctra. Aeropuerto-Torellano s/n CV-852",
+        "03320 Torrellano (Alicante)",
+        "Oficina +34 601 356 356",
+        "Móvil +34 601 356 356",
+        "info@alcvaletparking.com",
+        "www.alcvaletparking.com"
+    ];
+
+    companyLines.forEach(line => {
+        doc.text(line, 14, yPos);
+        yPos += 5;
+    });
+
+    // --- LÍNEA SEPARADORA ---
+    doc.setDrawColor(0);
+    doc.line(14, yPos + 5, 195, yPos + 5);
+    yPos += 15;
+
+    // --- TABLA DATOS CLIENTE ---
+    const clientData = [
+        ["Nombre Completo/Razón Social:", contract.clientes.nombre],
+        ["CIF:", contract.clientes.cif || "---"],
+        ["Dirección de facturación:", contract.clientes.direccion || "---"],
+        ["Teléfono:", contract.clientes.telefono]
+    ];
+
+    autoTable(doc, {
+        startY: yPos,
+        head: [],
+        body: clientData,
+        theme: 'plain',
+        styles: { cellPadding: 1, fontSize: 10 },
+        columnStyles: {
+            0: { fontStyle: 'bold', cellWidth: 60 },
+            1: { fontStyle: 'bold' }
+        },
+    });
+
+    // --- LÍNEA SEPARADORA ---
+    let finalY = (doc as any).lastAutoTable.finalY + 5;
+    doc.line(14, finalY, 195, finalY);
+    finalY += 10;
+
+    // --- TABLA CONTRATO ---
+    const reservationData = [
+        ["Marca, Modelo y Color:", contract.coche],
+        ["Matrícula:", contract.matricula],
+        ["Tipo de plaza:", contract.tipo_plaza],
+        ["Fecha Entrada:", `${formatearFecha(contract.fecha_inicio)}`],
+        ["Fecha Salida:", `${formatearFecha(contract.fecha_fin)}`],
+        ["Forma de pago:", contract.metodo_pago || "---"],
+    ];
+
+    autoTable(doc, {
+        startY: finalY,
+        body: reservationData,
+        theme: 'plain',
+        styles: { cellPadding: 1, fontSize: 10 },
+        columnStyles: {
+            0: { fontStyle: 'bold', cellWidth: 50 },
+            1: { halign: 'right', cellWidth: 60 }
+        },
+        margin: { right: 80 }
+    });
+
+    finalY = (doc as any).lastAutoTable.finalY + 5;
+    doc.line(14, finalY, 195, finalY);
+    finalY += 10;
+
+    // --- TABLAS PRECIO Y OBSERVACIONES (Lado a lado) ---
+    const pageHeight = doc.internal.pageSize.height;
+    if (finalY > pageHeight - 60) {
+        doc.addPage();
+        finalY = 20;
+    }
+
+    // Tabla Precio (Izquierda)
+    autoTable(doc, {
+        startY: finalY,
+        body: [
+            ["Precio Estancia", `${contract.precio} €`],
+            ["TOTAL", `${contract.precio} €`]
+        ],
+        theme: 'grid',
+        styles: { fontSize: 10, cellPadding: 3 },
+        columnStyles: {
+            0: { fontStyle: 'bold', cellWidth: 40 },
+            1: { halign: 'right', fontStyle: 'bold', cellWidth: 40 }
+        },
+        margin: { right: 115 }
+    });
+
+    // Tabla Observaciones (Derecha)
+    autoTable(doc, {
+        startY: finalY,
+        body: [
+            [`Inicio del contrato: ${fechaInicio}`],
+            [`Fin del contrato: ${fechaFin}`]
+        ],
+        theme: 'grid',
+        styles: { fontSize: 10, cellPadding: 3 },
+        columnStyles: { 0: { fontStyle: 'bold' } },
+        margin: { left: 110 }
+    });
+
+    finalY = (doc as any).lastAutoTable.finalY + 10;
+    doc.line(14, finalY, 195, finalY);
+    finalY += 10;
+
+    // --- FIRMAS ---
+    const boxHeight = 30;
+    const boxWidth = 80;
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Conforme Cliente", 14 + (boxWidth/2), finalY, { align: 'center' });
+    doc.rect(14, finalY + 2, boxWidth, boxHeight);
+
+    doc.text("Conforme ALC", 110 + (boxWidth/2), finalY, { align: 'center' });
+    doc.rect(110, finalY + 2, boxWidth, boxHeight);
 
     // --- RETORNAR BUFFER ---
     const pdfArrayBuffer = doc.output('arraybuffer');

@@ -5,6 +5,7 @@ import pricing from './routes/pricing';
 import { cors } from 'hono/cors';
 import { invoices } from './routes/invoices';
 import users from './routes/users';
+import contracts from './routes/contracts';
 
 const app = new Hono();
 
@@ -31,5 +32,6 @@ app.route('/api/bookings', bookings);
 app.route('/api/invoices', invoices);
 app.route('/api/pricing', pricing);
 app.route('/api/users', users);
+app.route('/api/contracts', contracts);
 
 export default app;
