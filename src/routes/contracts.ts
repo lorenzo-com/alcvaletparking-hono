@@ -5,6 +5,7 @@ import { Bindings } from '../types';
 import { generateContractPDF } from '../utils/emailService';
 import { Buffer } from 'node:buffer';
 import { getContractEmailHtml } from '../utils/contractEmailTemplate';
+import { getContractExpiryHtml, ExpiringContract } from '../utils/contractExpiryTemplate';
 
 const contracts = new Hono<{ Bindings: Bindings }>();
 
@@ -209,6 +210,104 @@ contracts.delete('/:id', async (c) => {
     }
 
     return c.json({ success: true });
+});
+
+// Disparado por pg_cron (Supabase) una vez al día. Ver migración `cron_avisar_contratos_expirados`.
+contracts.post('/check-expired', async (c) => {
+    if (c.req.header('x-cron-secret') !== c.env.CRON_SECRET) {
+        return c.json({ success: false, message: 'No autorizado' }, 401);
+    }
+
+    try {
+        const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY);
+
+        // 'en-CA' devuelve el formato YYYY-MM-DD que espera la columna `date`.
+        // Calculamos el día en hora española, no en UTC, para no adelantar el aviso.
+        const hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Madrid' });
+
+        // Usamos <= en lugar de = para recuperar los contratos de días en los que
+        // el cron o el envío hayan fallado, en vez de perder el aviso.
+        const { data: expirados, error } = await supabase
+            .from('contratos')
+            .select(`
+                id,
+                num_contrato,
+                coche,
+                matricula,
+                tipo_plaza,
+                fecha_inicio,
+                fecha_fin,
+                precio,
+                pagado,
+                clientes (
+                    nombre,
+                    telefono
+                )
+            `)
+            .lte('fecha_fin', hoy)
+            .eq('aviso_expiracion_enviado', false)
+            .order('fecha_fin', { ascending: true });
+
+        if (error) {
+            return c.json({
+                success: false,
+                message: 'Error al consultar los contratos expirados',
+                details: error.message
+            }, 500);
+        }
+
+        if (!expirados || expirados.length === 0) {
+            return c.json({ success: true, enviados: 0, message: 'No hay contratos expirados pendientes de aviso' });
+        }
+
+        const contratosEmail: ExpiringContract[] = expirados.map((contrato: any) => ({
+            num_contrato: contrato.num_contrato,
+            cliente_nombre: contrato.clientes?.nombre || '---',
+            cliente_telefono: contrato.clientes?.telefono || '---',
+            coche: contrato.coche,
+            matricula: contrato.matricula,
+            tipo_plaza: contrato.tipo_plaza,
+            fecha_inicio: contrato.fecha_inicio,
+            fecha_fin: contrato.fecha_fin,
+            precio: contrato.precio,
+            pagado: contrato.pagado
+        }));
+
+        const resend = new Resend(c.env.RESEND_API_KEY);
+
+        const { error: emailError } = await resend.emails.send({
+            from: 'ALC Valet Parking <reservas@alcvaletparking.com>',
+            to: 'info@alcvaletparking.com',
+            subject: `⚠️ Contratos expirados (${contratosEmail.length}) - ${new Date(hoy).toLocaleDateString('es-ES')}`,
+            html: getContractExpiryHtml(contratosEmail, hoy)
+        });
+
+        // Solo marcamos como avisados si el email ha salido, para reintentar mañana si falla.
+        if (emailError) {
+            return c.json({
+                success: false,
+                message: 'Error al enviar el email de aviso',
+                details: emailError.message
+            }, 500);
+        }
+
+        const { error: updateError } = await supabase
+            .from('contratos')
+            .update({ aviso_expiracion_enviado: true })
+            .in('id', expirados.map((contrato: any) => contrato.id));
+
+        if (updateError) {
+            console.error('Aviso enviado pero no se pudieron marcar los contratos:', updateError.message);
+        }
+
+        return c.json({ success: true, enviados: contratosEmail.length });
+    } catch (e) {
+        return c.json({
+            success: false,
+            message: 'Error interno del servidor',
+            error_real: e instanceof Error ? e.message : String(e)
+        }, 500);
+    }
 });
 
 export default contracts;
