@@ -10,6 +10,8 @@ interface EmailData {
   precio: number;
   num_reserva: number;
   comentarios: string | null;
+  coche: string;
+  matricula: string;
 }
 
 // --- Función para formatear fechas a dd/mm/yyyy ---
@@ -213,6 +215,10 @@ export const getBookingEmailHtml = (data: EmailData): string => {
             <div class="detail-row">
               <span class="label">Comentarios: </span>
               <span class="value">${data.comentarios ?? 'Sin comentarios'}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Vehículo: </span>
+              <span class="value">${data.coche} (${data.matricula})</span>
             </div>
           </div>
 
